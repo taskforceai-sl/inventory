@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { floorsApi, shelvesApi, boxesApi, inventoryApi } from '../api/client';
+import { floorsApi, shelvesApi, boxesApi, inventoryApi, branchesApi } from '../api/client';
 import DataTable from '../components/DataTable';
 
 type View = 'floors' | 'shelves' | 'boxes';
@@ -15,6 +15,7 @@ export default function LocationsPage() {
   const [shelves, setShelves] = useState<any[]>([]);
   const [boxes, setBoxes] = useState<any[]>([]);
   const [floorInventory, setFloorInventory] = useState<any[]>([]);
+  const [branches, setBranches] = useState<any[]>([]);
 
   // ── Navigation ────────────────────────────────────────────
   const [view, setView] = useState<View>('floors');
@@ -84,7 +85,13 @@ export default function LocationsPage() {
     }
   };
 
-  useEffect(() => { loadFloors(); }, []);
+  useEffect(() => {
+    loadFloors();
+    branchesApi.list().then((res) => {
+      const data = res.data?.data?.items ?? res.data?.data ?? res.data ?? [];
+      setBranches(Array.isArray(data) ? data : []);
+    }).catch(() => setBranches([]));
+  }, []);
 
   // ── Navigation helpers ────────────────────────────────────
   const drillToShelves = (floor: any) => {
@@ -526,6 +533,13 @@ export default function LocationsPage() {
             <form onSubmit={handleCreateFloor}>
               <div className="modal-body form-stack">
                 <p className="text-sm text-gray-500">A floor is a physical level inside a branch building (e.g., "Ground Floor", "1st Floor", "Basement").</p>
+                <div className="form-group">
+                  <label className="form-label">Branch *</label>
+                  <select className="input-field" required value={floorForm.branchId} onChange={(e) => setFloorForm(f => ({ ...f, branchId: e.target.value }))}>
+                    <option value="">— Select Branch —</option>
+                    {branches.map((b: any) => <option key={b.id} value={b.id}>{b.name} ({b.code})</option>)}
+                  </select>
+                </div>
                 <div className="form-grid-2">
                   <div className="form-group">
                     <label className="form-label">Floor Name *</label>
@@ -559,6 +573,12 @@ export default function LocationsPage() {
               <button className="modal-close" onClick={() => setEditingFloor(null)}>✕</button>
             </div>
             <div className="modal-body form-stack">
+              {editingFloor?.branch && (
+                <div className="form-group">
+                  <label className="form-label">Branch</label>
+                  <div className="input-field bg-gray-50 text-gray-600">{editingFloor.branch.name} ({editingFloor.branch.code})</div>
+                </div>
+              )}
               <div className="form-grid-2">
                 <div className="form-group">
                   <label className="form-label">Floor Name *</label>
