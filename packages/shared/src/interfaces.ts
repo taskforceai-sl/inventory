@@ -123,6 +123,8 @@ export interface ISKU {
   dimensions?: IDimensions | null;
   isFragile: boolean;
   maxStackHeight?: number | null;
+  basePrice?: number | null;
+  currency?: string | null;
   batchPricing?: IBatchPricingTier[] | null;
   lowStockThreshold?: number | null;
   isActive: boolean;
@@ -358,6 +360,8 @@ export interface IGRNLine {
   expectedQuantity: number;
   receivedQuantity: number;
   batchReference?: string | null;
+  costPrice?: number | null;
+  sellingPrice?: number | null;
   notes?: string | null;
 }
 
