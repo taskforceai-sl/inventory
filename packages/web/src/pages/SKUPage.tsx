@@ -24,7 +24,24 @@ const defaultForm = {
   currency: 'USD',
 };
 
-const defaultBatchPricingTier = { minQty: '', maxQty: '', price: '', currency: 'USD' };
+let _tierKeyCounter = 0;
+const newBatchPricingTier = (currency = 'USD') => ({
+  _key: ++_tierKeyCounter,
+  minQty: '',
+  maxQty: '',
+  price: '',
+  currency,
+});
+
+const toBatchPricingPayload = (tiers: any[], fallbackCurrency: string) =>
+  tiers
+    .filter((t) => t.minQty !== '' && t.price !== '')
+    .map((t) => ({
+      minQty: parseInt(t.minQty),
+      maxQty: t.maxQty !== '' ? parseInt(t.maxQty) : null,
+      price: parseFloat(t.price),
+      currency: t.currency || fallbackCurrency || 'USD',
+    }));
 
 type ModalTab = 'details' | 'pricing' | 'tags' | 'barcodes' | 'locations' | 'variants';
 
@@ -149,14 +166,7 @@ export default function SKUPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const batchPricing = formBatchPricingTiers
-        .filter((t) => t.minQty !== '' && t.price !== '')
-        .map((t) => ({
-          minQty: parseInt(t.minQty),
-          maxQty: t.maxQty !== '' ? parseInt(t.maxQty) : null,
-          price: parseFloat(t.price),
-          currency: t.currency || form.currency || 'USD',
-        }));
+      const batchPricing = toBatchPricingPayload(formBatchPricingTiers, form.currency);
       const payload = {
         ...form,
         maxStackHeight: form.maxStackHeight ? parseFloat(form.maxStackHeight) : null,
@@ -195,6 +205,7 @@ export default function SKUPage() {
     setEditBatchPricingTiers(
       Array.isArray(sku.batchPricing)
         ? sku.batchPricing.map((t: any) => ({
+            _key: ++_tierKeyCounter,
             minQty: String(t.minQty ?? ''),
             maxQty: t.maxQty != null ? String(t.maxQty) : '',
             price: String(t.price ?? ''),
@@ -214,14 +225,7 @@ export default function SKUPage() {
     if (!editingSku) return;
     setIsSaving(true);
     try {
-      const batchPricing = editBatchPricingTiers
-        .filter((t) => t.minQty !== '' && t.price !== '')
-        .map((t) => ({
-          minQty: parseInt(t.minQty),
-          maxQty: t.maxQty !== '' ? parseInt(t.maxQty) : null,
-          price: parseFloat(t.price),
-          currency: t.currency || editForm.currency || 'USD',
-        }));
+      const batchPricing = toBatchPricingPayload(editBatchPricingTiers, editForm.currency);
       const payload = {
         ...editForm,
         maxStackHeight: editForm.maxStackHeight ? parseFloat(editForm.maxStackHeight) : null,
@@ -657,11 +661,11 @@ export default function SKUPage() {
                   <div className="mt-3">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-xs font-medium text-gray-600">Batch Pricing Tiers (optional)</p>
-                      <button type="button" className="btn-sm" onClick={() => setFormBatchPricingTiers((t) => [...t, { ...defaultBatchPricingTier, currency: form.currency || 'USD' }])}>+ Add Tier</button>
+                      <button type="button" className="btn-sm" onClick={() => setFormBatchPricingTiers((t) => [...t, newBatchPricingTier(form.currency || 'USD')])}>+ Add Tier</button>
                     </div>
                     {formBatchPricingTiers.length === 0 && <p className="text-xs text-gray-400">No batch pricing tiers. Add tiers to offer quantity-based discounts.</p>}
                     {formBatchPricingTiers.map((tier, i) => (
-                      <div key={i} className="flex items-end gap-2 mb-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                      <div key={tier._key} className="flex items-end gap-2 mb-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
                         <div className="form-group mb-0" style={{ flex: 1 }}>
                           <label className="form-label text-xs">Min Qty *</label>
                           <input className="input-field" type="number" min="1" step="1" value={tier.minQty} placeholder="1" onChange={(e) => setFormBatchPricingTiers((t) => t.map((x, j) => j === i ? { ...x, minQty: e.target.value } : x))} />
@@ -822,7 +826,7 @@ export default function SKUPage() {
                         <p className="text-sm font-semibold text-gray-700">Batch Pricing Tiers</p>
                         <p className="text-xs text-gray-400">Offer lower prices for larger quantities</p>
                       </div>
-                      <button type="button" className="btn-sm" onClick={() => setEditBatchPricingTiers((t) => [...t, { ...defaultBatchPricingTier, currency: editForm.currency || 'USD' }])}>+ Add Tier</button>
+                      <button type="button" className="btn-sm" onClick={() => setEditBatchPricingTiers((t) => [...t, newBatchPricingTier(editForm.currency || 'USD')])}>+ Add Tier</button>
                     </div>
                     {editBatchPricingTiers.length === 0 && (
                       <div className="text-center py-6 text-gray-400 text-sm border border-dashed border-gray-200 rounded-lg">
@@ -831,7 +835,7 @@ export default function SKUPage() {
                       </div>
                     )}
                     {editBatchPricingTiers.map((tier, i) => (
-                      <div key={i} className="flex items-end gap-2 mb-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <div key={tier._key} className="flex items-end gap-2 mb-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                         <div className="form-group mb-0" style={{ flex: 1 }}>
                           <label className="form-label text-xs">Min Qty *</label>
                           <input className="input-field" type="number" min="1" step="1" value={tier.minQty} placeholder="1" onChange={(e) => setEditBatchPricingTiers((t) => t.map((x, j) => j === i ? { ...x, minQty: e.target.value } : x))} />

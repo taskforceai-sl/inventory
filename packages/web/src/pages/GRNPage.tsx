@@ -103,11 +103,15 @@ export default function GRNPage() {
         ...form,
         floorId: form.floorId || undefined,
         shelfId: form.shelfId || undefined,
-        lines: form.lines.map((l) => ({
-          ...l,
-          costPrice: l.costPrice !== '' ? parseFloat(l.costPrice) : undefined,
-          sellingPrice: l.sellingPrice !== '' ? parseFloat(l.sellingPrice) : undefined,
-        })),
+        lines: form.lines.map((l) => {
+          const costParsed = l.costPrice !== '' ? parseFloat(l.costPrice) : undefined;
+          const sellParsed = l.sellingPrice !== '' ? parseFloat(l.sellingPrice) : undefined;
+          return {
+            ...l,
+            costPrice: costParsed != null && !isNaN(costParsed) ? costParsed : undefined,
+            sellingPrice: sellParsed != null && !isNaN(sellParsed) ? sellParsed : undefined,
+          };
+        }),
       };
       await grnsApi.create(payload);
       setShowForm(false);
