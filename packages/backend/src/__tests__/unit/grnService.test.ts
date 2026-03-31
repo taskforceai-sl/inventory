@@ -315,7 +315,7 @@ describe('submitInspection', () => {
   });
 });
 
-describe('createGRN with batch pricing', () => {
+describe('createGRN pricing persistence on lines', () => {
   beforeEach(() => {
     resetPrismaMocks();
   });
