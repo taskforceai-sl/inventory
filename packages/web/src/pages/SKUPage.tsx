@@ -40,7 +40,7 @@ const toBatchPricingPayload = (tiers: any[], fallbackCurrency: string) =>
       minQty: parseInt(t.minQty),
       maxQty: t.maxQty !== '' ? parseInt(t.maxQty) : null,
       price: parseFloat(t.price),
-      currency: t.currency || fallbackCurrency || 'USD',
+      currency: fallbackCurrency || 'USD',
     }));
 
 type ModalTab = 'details' | 'pricing' | 'tags' | 'barcodes' | 'locations' | 'variants';
