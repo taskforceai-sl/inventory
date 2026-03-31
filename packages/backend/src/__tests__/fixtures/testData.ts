@@ -112,6 +112,12 @@ export const SKUS = {
     dimensions: { height: 30, width: 20, depth: 15, weight: 2.5, volume: 9000 },
     isFragile: false,
     maxStackHeight: 120,
+    basePrice: 12.99,
+    currency: 'USD',
+    batchPricing: [
+      { minQty: 10, maxQty: 49, price: 11.99, currency: 'USD' },
+      { minQty: 50, maxQty: null, price: 10.49, currency: 'USD' },
+    ],
     isActive: true,
     createdAt: new Date('2024-01-10T00:00:00Z'),
     updatedAt: new Date('2024-01-10T00:00:00Z'),
@@ -129,6 +135,8 @@ export const SKUS = {
     dimensions: { height: 5, width: 5, depth: 3, weight: 0.2, volume: 75 },
     isFragile: true,
     maxStackHeight: 15,
+    basePrice: null,
+    currency: 'USD',
     isActive: true,
     createdAt: new Date('2024-01-10T00:00:00Z'),
     updatedAt: new Date('2024-01-10T00:00:00Z'),
@@ -267,6 +275,8 @@ export const GRN_LINES = {
     expectedQuantity: 50,
     receivedQuantity: 0,
     batchReference: 'BATCH-2024-001',
+    costPrice: 8.50,
+    sellingPrice: 12.99,
     notes: null,
   } as IGRNLine,
 
@@ -277,6 +287,8 @@ export const GRN_LINES = {
     expectedQuantity: 100,
     receivedQuantity: 0,
     batchReference: 'BATCH-2024-002',
+    costPrice: null,
+    sellingPrice: null,
     notes: 'Handle with care',
   } as IGRNLine,
 
@@ -287,6 +299,8 @@ export const GRN_LINES = {
     expectedQuantity: 30,
     receivedQuantity: 30,
     batchReference: 'BATCH-2024-003',
+    costPrice: 9.00,
+    sellingPrice: 14.99,
     notes: null,
   } as IGRNLine,
 };

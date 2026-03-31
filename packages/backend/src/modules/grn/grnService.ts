@@ -17,6 +17,8 @@ export async function createGRN(data: {
     variantId?: string;
     expectedQuantity: number;
     batchReference?: string;
+    costPrice?: number;
+    sellingPrice?: number;
     notes?: string;
   }>;
 }) {
@@ -54,6 +56,8 @@ export async function createGRN(data: {
           expectedQuantity: line.expectedQuantity,
           receivedQuantity: 0,
           batchReference: line.batchReference,
+          costPrice: line.costPrice,
+          sellingPrice: line.sellingPrice,
           notes: line.notes,
         })),
       },

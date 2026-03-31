@@ -49,7 +49,7 @@ export default function GRNPage() {
     notes: '',
     floorId: '',
     shelfId: '',
-    lines: [{ skuId: '', variantId: '', expectedQuantity: 1, batchReference: '' }],
+    lines: [{ skuId: '', variantId: '', expectedQuantity: 1, batchReference: '', costPrice: '', sellingPrice: '' }],
   });
 
   const loadData = async () => {
@@ -99,9 +99,23 @@ export default function GRNPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await grnsApi.create({ ...form, floorId: form.floorId || undefined, shelfId: form.shelfId || undefined });
+      const payload = {
+        ...form,
+        floorId: form.floorId || undefined,
+        shelfId: form.shelfId || undefined,
+        lines: form.lines.map((l) => {
+          const costParsed = l.costPrice !== '' ? parseFloat(l.costPrice) : undefined;
+          const sellParsed = l.sellingPrice !== '' ? parseFloat(l.sellingPrice) : undefined;
+          return {
+            ...l,
+            costPrice: costParsed != null && !isNaN(costParsed) ? costParsed : undefined,
+            sellingPrice: sellParsed != null && !isNaN(sellParsed) ? sellParsed : undefined,
+          };
+        }),
+      };
+      await grnsApi.create(payload);
       setShowForm(false);
-      setForm({ supplierId: '', invoiceReference: '', expectedDeliveryDate: getTodayString(), notes: '', floorId: '', shelfId: '', lines: [{ skuId: '', variantId: '', expectedQuantity: 1, batchReference: '' }] });
+      setForm({ supplierId: '', invoiceReference: '', expectedDeliveryDate: getTodayString(), notes: '', floorId: '', shelfId: '', lines: [{ skuId: '', variantId: '', expectedQuantity: 1, batchReference: '', costPrice: '', sellingPrice: '' }] });
       setFormShelves([]);
       setLineVariants({});
       await loadData();
@@ -110,7 +124,7 @@ export default function GRNPage() {
     }
   };
 
-  const addLine = () => setForm((f) => ({ ...f, lines: [...f.lines, { skuId: '', variantId: '', expectedQuantity: 1, batchReference: '' }] }));
+  const addLine = () => setForm((f) => ({ ...f, lines: [...f.lines, { skuId: '', variantId: '', expectedQuantity: 1, batchReference: '', costPrice: '', sellingPrice: '' }] }));
   const removeLine = (i: number) => { setForm((f) => ({ ...f, lines: f.lines.filter((_, idx) => idx !== i) })); setLineVariants(prev => { const n = { ...prev }; delete n[i]; return n; }); };
   const updateLine = (i: number, field: string, value: any) => {
     setForm((f) => ({ ...f, lines: f.lines.map((l, idx) => idx === i ? { ...l, [field]: value } : l) }));
@@ -386,6 +400,32 @@ export default function GRNPage() {
                             ))}
                           </select>
                         )}
+                        <div className="flex gap-2 items-center">
+                          <div className="flex flex-col flex-1">
+                            <label className="form-label text-xs">Cost Price</label>
+                            <input
+                              type="number"
+                              className="input-field"
+                              min="0"
+                              step="0.01"
+                              value={line.costPrice}
+                              placeholder="e.g. 5.00"
+                              onChange={(e) => updateLine(i, 'costPrice', e.target.value)}
+                            />
+                          </div>
+                          <div className="flex flex-col flex-1">
+                            <label className="form-label text-xs">Selling Price</label>
+                            <input
+                              type="number"
+                              className="input-field"
+                              min="0"
+                              step="0.01"
+                              value={line.sellingPrice}
+                              placeholder="e.g. 9.99"
+                              onChange={(e) => updateLine(i, 'sellingPrice', e.target.value)}
+                            />
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>

@@ -124,6 +124,8 @@ model SKU {
   dimensions      Json?
   isFragile       Boolean  @default(false) @map("is_fragile")
   maxStackHeight  Float?   @map("max_stack_height")
+  basePrice       Float?   @map("base_price")
+  currency        String?  @default("USD") @map("currency")
   batchPricing    Json?    @map("batch_pricing")
   lowStockThreshold Int?   @map("low_stock_threshold")
   isActive        Boolean  @default(true) @map("is_active")
@@ -508,6 +510,8 @@ model GRNLine {
   expectedQuantity Int     @map("expected_quantity")
   receivedQuantity Int     @default(0) @map("received_quantity")
   batchReference   String? @map("batch_reference")
+  costPrice        Float?  @map("cost_price")
+  sellingPrice     Float?  @map("selling_price")
   notes            String?
 
   grn               GRN                @relation(fields: [grnId], references: [id])
