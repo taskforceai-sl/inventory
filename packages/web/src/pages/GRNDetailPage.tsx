@@ -198,6 +198,8 @@ export default function GRNDetailPage() {
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <span>Expected: <strong className="text-gray-900">{line.expectedQuantity}</strong></span>
                   <span>Received: <strong className="text-gray-900">{line.receivedQuantity}</strong></span>
+                  {line.costPrice != null && <span>Cost: <strong className="text-gray-900">{line.costPrice.toFixed(2)}</strong></span>}
+                  {line.sellingPrice != null && <span>Sell: <strong className="text-green-700">{line.sellingPrice.toFixed(2)}</strong></span>}
                 </div>
               </div>
               {grn.status !== GRNStatus.Draft && line.inspectionRecords?.length === 0 && (

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { prismaMock, resetPrismaMocks } from '../mocks/prismaMock';
-import { GRNS, GRN_LINES, USERS, SKUS } from '../fixtures/testData';
+import { GRNS, GRN_LINES, USERS, SKUS, VENDORS } from '../fixtures/testData';
 import { GRNStatus, InventoryState, InventoryEventType } from '@jingles/shared';
 
 // Mock prisma client before importing modules that use it
@@ -312,5 +312,82 @@ describe('submitInspection', () => {
         data: expect.objectContaining({ status: GRNStatus.FullyInspected }),
       })
     );
+  });
+});
+
+describe('createGRN with batch pricing', () => {
+  beforeEach(() => {
+    resetPrismaMocks();
+  });
+
+  it('persists costPrice and sellingPrice on GRN lines', async () => {
+    prismaMock.gRN.findFirst.mockResolvedValue(null);
+    prismaMock.gRN.create.mockResolvedValue({
+      ...GRNS.draftGRN,
+      lines: [GRN_LINES.draftLine1],
+    });
+    prismaMock.inventoryEvent.create.mockResolvedValue({
+      id: 'event-price-001',
+      eventType: InventoryEventType.GRN_CREATED,
+    });
+
+    const result = await createGRN({
+      supplierId: VENDORS.acme.id,
+      invoiceReference: 'ACME-PRICE-001',
+      createdBy: USERS.admin.id,
+      lines: [
+        {
+          skuId: SKUS.widgetBox.id,
+          expectedQuantity: 50,
+          batchReference: 'BATCH-PRICE-001',
+          costPrice: 8.50,
+          sellingPrice: 12.99,
+        },
+      ],
+    });
+
+    expect(prismaMock.gRN.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          lines: expect.objectContaining({
+            create: expect.arrayContaining([
+              expect.objectContaining({ costPrice: 8.50, sellingPrice: 12.99 }),
+            ]),
+          }),
+        }),
+      })
+    );
+    expect(result.status).toBe(GRNStatus.Draft);
+  });
+
+  it('allows GRN lines without pricing (undefined cost/sell price)', async () => {
+    prismaMock.gRN.findFirst.mockResolvedValue(null);
+    prismaMock.gRN.create.mockResolvedValue({
+      ...GRNS.draftGRN,
+      lines: [GRN_LINES.draftLine2],
+    });
+    prismaMock.inventoryEvent.create.mockResolvedValue({
+      id: 'event-noprice-001',
+      eventType: InventoryEventType.GRN_CREATED,
+    });
+
+    const result = await createGRN({
+      supplierId: VENDORS.acme.id,
+      createdBy: USERS.admin.id,
+      lines: [{ skuId: SKUS.widgetPiece.id, expectedQuantity: 20 }],
+    });
+
+    expect(prismaMock.gRN.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          lines: expect.objectContaining({
+            create: expect.arrayContaining([
+              expect.objectContaining({ costPrice: undefined, sellingPrice: undefined }),
+            ]),
+          }),
+        }),
+      })
+    );
+    expect(result.status).toBe(GRNStatus.Draft);
   });
 });
